@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MedRush Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--p:#00BFA5;--pd:#00897B;--ac:#FF6F00;--dg:#F44336;--sc:#4CAF50;--wn:#FF9800;--bg:#0A0E1A;--sf:#111827;--s2:#1C2333;--s3:#242F44;--tx:#E8EDF5;--t2:#8899AA;--br:rgba(255,255,255,0.07);--rd:16px;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+#authScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at 50% 0%,rgba(0,191,165,.15) 0%,transparent 70%),var(--bg);}
+.a-logo{width:72px;height:72px;background:linear-gradient(135deg,var(--p),var(--pd));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,191,165,.3);}
+.a-title{font-size:26px;font-weight:700;margin-bottom:4px;}
+.a-sub{color:var(--t2);font-size:14px;margin-bottom:36px;}
+.a-card{background:var(--sf);border:1px solid var(--br);border-radius:var(--rd);padding:28px;width:100%;max-width:380px;}
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-size:12px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:12px 14px;color:var(--tx);font-size:15px;font-family:inherit;outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--p);}
+.fg textarea{resize:vertical;min-height:70px;}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-p{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;}
+.btn-p:active{transform:scale(.98);}
+.btn-d{background:var(--dg);color:#fff;}
+.btn-s{background:var(--sc);color:#fff;}
+.btn-o{background:transparent;border:1px solid var(--br);color:var(--tx);}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;width:auto;}
+.btn-xs{padding:5px 10px;font-size:12px;border-radius:7px;width:auto;}
+#app{display:none;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--sf);border-bottom:1px solid var(--br);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.topbar-menu{font-size:22px;cursor:pointer;color:var(--t2);}
+.topbar-title{flex:1;font-size:17px;font-weight:700;}
+.drawer-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;}
+.drawer{position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--sf);z-index:201;transform:translateX(-100%);transition:transform .3s ease;overflow-y:auto;}
+.drawer.open{transform:translateX(0);}
+.drawer-hd{padding:24px 20px;background:linear-gradient(135deg,var(--pd),var(--p));}
+.nav-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;transition:background .2s;color:var(--t2);font-size:14px;}
+.nav-item:hover,.nav-item.active{background:rgba(0,191,165,.1);color:var(--p);}
+.nav-item i{width:20px;text-align:center;}
+.nav-div{height:1px;background:var(--br);margin:8px 0;}
+.content{flex:1;padding:16px;overflow-y:auto;}
+.screen{display:none;}
+.screen.active{display:block;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--sf);border:1px solid var(--br);border-radius:var(--rd);padding:16px;}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:18px;}
+.stat-val{font-size:22px;font-weight:700;}
+.stat-lbl{font-size:12px;color:var(--t2);margin-top:2px;}
+.full-w{grid-column:1/-1;}
+.card{background:var(--sf);border:1px solid var(--br);border-radius:var(--rd);padding:16px;margin-bottom:12px;}
+.card-title{font-size:15px;font-weight:600;}
+.sec-title{font-size:18px;font-weight:700;margin-bottom:16px;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.bs{background:rgba(76,175,80,.15);color:var(--sc);}
+.bd{background:rgba(244,67,54,.15);color:var(--dg);}
+.bw{background:rgba(255,152,0,.15);color:var(--wn);}
+.bi{background:rgba(0,191,165,.15);color:var(--p);}
+.bg{background:rgba(136,153,170,.15);color:var(--t2);}
+.list-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border-radius:12px;margin-bottom:8px;}
+.list-av{width:44px;height:44px;border-radius:12px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.list-info{flex:1;min-width:0;}
+.list-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.list-sub{font-size:12px;color:var(--t2);margin-top:2px;}
+.charge-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--br);}
+.charge-row:last-child{border-bottom:none;}
+.charge-lbl{font-size:14px;color:var(--t2);}
+.charge-inp{background:var(--s2);border:1px solid var(--br);border-radius:8px;padding:6px 10px;color:var(--tx);font-size:14px;width:90px;text-align:right;outline:none;}
+.area-row{display:flex;gap:10px;margin-bottom:8px;}
+.area-row input,.area-row select{flex:1;background:var(--s2);border:1px solid var(--br);border-radius:8px;padding:10px 12px;color:var(--tx);font-size:14px;outline:none;}
+.ord-item{background:var(--s2);border-radius:12px;padding:14px;margin-bottom:10px;}
+.ord-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.ord-id{font-size:13px;font-weight:700;color:var(--p);}
+.ord-meta{font-size:12px;color:var(--t2);margin-top:3px;}
+.ord-ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--br);}
+.chart-box{background:var(--s2);border-radius:12px;padding:16px;margin-bottom:16px;}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px;}
+.bar{flex:1;border-radius:6px 6px 0 0;background:var(--p);opacity:.8;min-height:4px;}
+.bar-labels{display:flex;gap:6px;margin-top:6px;}
+.bar-lbl{flex:1;text-align:center;font-size:10px;color:var(--t2);}
+.tab-bar{display:flex;background:var(--s2);border-radius:12px;padding:4px;margin-bottom:16px;gap:4px;overflow-x:auto;}
+.tab-btn{flex:1;padding:8px;border:none;background:transparent;color:var(--t2);font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;white-space:nowrap;min-width:50px;}
+.tab-btn.active{background:var(--p);color:#fff;}
+.srch{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--br);border-radius:12px;padding:10px 14px;margin-bottom:16px;}
+.srch input{flex:1;background:none;border:none;color:var(--tx);font-size:14px;outline:none;}
+.empty{text-align:center;padding:40px 20px;color:var(--t2);}
+.empty i{font-size:40px;opacity:.3;display:block;margin-bottom:12px;}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tsl{position:absolute;inset:0;background:var(--s3);border-radius:12px;cursor:pointer;transition:.3s;}
+.tsl:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
+.toggle input:checked+.tsl{background:var(--p);}
+.toggle input:checked+.tsl:before{transform:translateX(20px);}
+.rev-big{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--p),#80CBC4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.doc-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;}
+.db-v{background:rgba(0,191,165,.15);color:var(--p);}
+.db-a{background:rgba(76,175,80,.15);color:var(--sc);}
+.db-r{background:rgba(244,67,54,.15);color:var(--dg);}
+.db-w{background:rgba(255,152,0,.15);color:var(--wn);}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:flex-end;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--sf);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px;}
+.modal-close{float:right;background:none;border:none;color:var(--t2);font-size:20px;cursor:pointer;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--s3);color:var(--tx);padding:12px 20px;border-radius:12px;font-size:13px;z-index:500;display:none;border:1px solid var(--br);white-space:nowrap;}
+.toast.show{display:block;animation:tIn .3s ease;}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.loading{display:flex;align-items:center;justify-content:center;padding:30px;color:var(--t2);}
+.loading i{animation:spin 1s linear infinite;font-size:24px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authScreen">
+  <div class="a-logo"><i class="fas fa-shield-alt" style="color:#fff"></i></div>
+  <div class="a-title">Admin Portal</div>
+  <div class="a-sub">MedRush Platform Control</div>
+  <div class="a-card">
+    <div class="fg"><label>Email</label><input type="email" id="aEmail" value="admin@medrush.com" readonly></div>
+    <div class="fg"><label>Password</label><input type="password" id="aPass" placeholder="Enter password"></div>
+    <button class="btn btn-p" onclick="adminLogin()"><i class="fas fa-lock-open"></i> Login</button>
+    <div id="authErr" style="color:var(--dg);font-size:13px;text-align:center;margin-top:10px;display:none"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="drawer-ov" id="drawerOv" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-hd">
+      <div style="font-size:20px;font-weight:800;color:#fff">&#128138; MedRush</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px">Admin Panel</div>
+    </div>
+    <div style="padding:12px 0">
+      <div class="nav-item active" onclick="goTo('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</div>
+      <div class="nav-item" onclick="goTo('areas',this)"><i class="fas fa-map-marker-alt"></i> Service Areas</div>
+      <div class="nav-item" onclick="goTo('charges',this)"><i class="fas fa-rupee-sign"></i> Charges</div>
+      <div class="nav-div"></div>
+      <div class="nav-item" onclick="goTo('pharmacies',this)"><i class="fas fa-clinic-medical"></i> Pharmacies</div>
+      <div class="nav-item" onclick="goTo('partners',this)"><i class="fas fa-motorcycle"></i> Delivery Partners</div>
+      <div class="nav-item" onclick="goTo('orders',this)"><i class="fas fa-receipt"></i> Orders</div>
+      <div class="nav-div"></div>
+      <div class="nav-item" onclick="goTo('analytics',this)"><i class="fas fa-chart-bar"></i> Analytics</div>
+      <div class="nav-div"></div>
+      <div class="nav-item" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-menu" onclick="openDrawer()"><i class="fas fa-bars"></i></div>
+    <div class="topbar-title" id="pageTitle">Dashboard</div>
+    <div style="width:36px;height:36px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center"><i class="fas fa-user"></i></div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="sc-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(0,191,165,.15);color:var(--p)"><i class="fas fa-users"></i></div><div class="stat-val" id="st-users"><i class="fas fa-spinner" style="animation:spin 1s linear infinite"></i></div><div class="stat-lbl">Total Users</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(255,111,0,.15);color:var(--ac)"><i class="fas fa-clinic-medical"></i></div><div class="stat-val" id="st-ph"><i class="fas fa-spinner" style="animation:spin 1s linear infinite"></i></div><div class="stat-lbl">Pharmacies</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(255,152,0,.15);color:var(--wn)"><i class="fas fa-motorcycle"></i></div><div class="stat-val" id="st-dp"><i class="fas fa-spinner" style="animation:spin 1s linear infinite"></i></div><div class="stat-lbl">Delivery Partners</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(76,175,80,.15);color:var(--sc)"><i class="fas fa-receipt"></i></div><div class="stat-val" id="st-ord"><i class="fas fa-spinner" style="animation:spin 1s linear infinite"></i></div><div class="stat-lbl">Total Orders</div></div>
+        <div class="stat-card full-w"><div class="stat-lbl" style="margin-bottom:4px">Platform Earnings</div><div class="rev-big" id="st-earn">&#8377;0</div></div>
+      </div>
+      <div class="card"><div class="card-title" style="margin-bottom:12px">Pending Approvals</div><div style="display:flex;gap:10px"><div style="background:rgba(244,67,54,.1);border:1px solid rgba(244,67,54,.2);border-radius:10px;padding:12px 16px;flex:1"><div style="font-size:22px;font-weight:700;color:var(--dg)" id="pend-ph">0</div><div style="font-size:12px;color:var(--t2)">Pharmacies</div></div><div style="background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.2);border-radius:10px;padding:12px 16px;flex:1"><div style="font-size:22px;font-weight:700;color:var(--wn)" id="pend-dp">0</div><div style="font-size:12px;color:var(--t2)">Delivery Partners</div></div></div></div>
+      <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div class="card-title">Recent Orders</div><span class="badge bi"><i class="fas fa-circle" style="font-size:6px"></i> Live</span></div><div id="dash-orders"><div class="loading"><i class="fas fa-spinner"></i></div></div></div>
+    </div>
+
+    <!-- SERVICE AREAS -->
+    <div class="screen" id="sc-areas">
+      <div class="sec-title">Service Areas</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:14px">Add New Area</div>
+        <div class="area-row"><input type="text" id="aState" placeholder="State (e.g. Karnataka)"><input type="text" id="aDistrict" placeholder="District (e.g. Bengaluru Urban)"></div>
+        <div class="area-row"><select id="aStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select><button class="btn btn-p btn-sm" onclick="addArea()"><i class="fas fa-plus"></i> Add</button></div>
+      </div>
+      <div id="areas-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>
+
+    <!-- CHARGES -->
+    <div class="screen" id="sc-charges">
+      <div class="sec-title">Charges Management</div>
+      <div class="card"><div id="charges-list"><div class="loading"><i class="fas fa-spinner"></i></div></div><button class="btn btn-p" style="margin-top:14px" onclick="saveCharges()"><i class="fas fa-save"></i> Save All Charges</button></div>
+    </div>
+
+    <!-- PHARMACIES -->
+    <div class="screen" id="sc-pharmacies">
+      <div class="sec-title">Pharmacy Management</div>
+      <div class="tab-bar"><button class="tab-btn active" onclick="filterPh('all',this)">All</button><button class="tab-btn" onclick="filterPh('pending',this)">Pending</button><button class="tab-btn" onclick="filterPh('approved',this)">Approved</button><button class="tab-btn" onclick="filterPh('rejected',this)">Rejected</button></div>
+      <div class="srch"><i class="fas fa-search"></i><input type="text" placeholder="Search pharmacies..." oninput="searchPh(this.value)" id="phSearch"></div>
+      <div id="ph-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>
+
+    <!-- PARTNERS -->
+    <div class="screen" id="sc-partners">
+      <div class="sec-title">Delivery Partners</div>
+      <div class="tab-bar"><button class="tab-btn active" onclick="filterDp('all',this)">All</button><button class="tab-btn" onclick="filterDp('pending',this)">Pending</button><button class="tab-btn" onclick="filterDp('approved',this)">Approved</button></div>
+      <div class="srch"><i class="fas fa-search"></i><input type="text" placeholder="Search partners..." oninput="searchDp(this.value)" id="dpSearch"></div>
+      <div id="dp-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="screen" id="sc-orders">
+      <div class="sec-title">Order Management</div>
+      <div class="tab-bar"><button class="tab-btn active" onclick="filterOrd('all',this)">All</button><button class="tab-btn" onclick="filterOrd('pending',this)">Pending</button><button class="tab-btn" onclick="filterOrd('confirmed',this)">Confirmed</button><button class="tab-btn" onclick="filterOrd('out_for_delivery',this)">Out</button><button class="tab-btn" onclick="filterOrd('delivered',this)">Delivered</button><button class="tab-btn" onclick="filterOrd('cancelled',this)">Cancelled</button></div>
+      <div id="ord-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="screen" id="sc-analytics">
+      <div class="sec-title">Analytics</div>
+      <div class="chart-box"><div style="font-size:14px;font-weight:600;margin-bottom:14px">Daily Orders (Last 7 Days)</div><div class="bar-chart" id="ordChart"></div><div class="bar-labels" id="ordChartLbl"></div></div>
+      <div class="chart-box"><div style="font-size:14px;font-weight:600;margin-bottom:14px">Revenue (Last 7 Days)</div><div class="bar-chart" id="revChart"></div><div class="bar-labels" id="revChartLbl"></div></div>
+      <div class="card"><div class="card-title" style="margin-bottom:12px">Top Selling Medicines</div><div id="topMeds"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, push, update, remove, onValue, query, orderByChild }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBb2YKyzp4cCABzMci41crDimLZIbLKM7w",
+  authDomain: "rsmedihub-c425a.firebaseapp.com",
+  projectId: "rsmedihub-c425a",
+  storageBucket: "rsmedihub-c425a.firebasestorage.app",
+  messagingSenderId: "1037218664219",
+  appId: "1:1037218664219:web:67ab0681b7dc7843cbcdbe"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// ── State ──────────────────────────────────────────────
+let allPharmacies = {}, allPartners = {}, allOrders = {}, allAreas = {};
+let charges = {}, phFilter='all', dpFilter='all', ordFilter='all';
+const ADMIN_EMAIL = "admin@medrush.com";
+
+// ── Auth ───────────────────────────────────────────────
+window.adminLogin = async () => {
+  const email = document.getElementById('aEmail').value.trim();
+  const pass  = document.getElementById('aPass').value.trim();
+  const err   = document.getElementById('authErr');
+  err.style.display='none';
+  if(!pass){err.textContent='Enter password';err.style.display='block';return;}
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    err.textContent = 'Invalid password. Try again.';
+    err.style.display='block';
+  }
+};
+
+window.adminLogout = async () => {
+  await signOut(auth);
+  document.getElementById('app').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  closeDrawer();
+};
+
+onAuthStateChanged(auth, user => {
+  if(user && user.email === ADMIN_EMAIL){
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    startListeners();
+  } else if(!user){
+    document.getElementById('app').style.display='none';
+    document.getElementById('authScreen').style.display='flex';
+  }
+});
+
+// ── Real-time Listeners ────────────────────────────────
+function startListeners(){
+  // Users count
+  onValue(ref(db,'users'), snap => {
+    const n = snap.exists() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('st-users').textContent = n.toLocaleString();
+  });
+  // Pharmacies
+  onValue(ref(db,'pharmacies'), snap => {
+    allPharmacies = snap.exists() ? snap.val() : {};
+    const all = Object.values(allPharmacies);
+    document.getElementById('st-ph').textContent = all.length.toLocaleString();
+    document.getElementById('pend-ph').textContent = all.filter(p=>p.status==='pending').length;
+    if(document.getElementById('sc-pharmacies').classList.contains('active')) renderPhList();
+  });
+  // Delivery Partners
+  onValue(ref(db,'deliveryPartners'), snap => {
+    allPartners = snap.exists() ? snap.val() : {};
+    const all = Object.values(allPartners);
+    document.getElementById('st-dp').textContent = all.length.toLocaleString();
+    document.getElementById('pend-dp').textContent = all.filter(p=>p.status==='pending').length;
+    if(document.getElementById('sc-partners').classList.contains('active')) renderDpList();
+  });
+  // Orders
+  onValue(ref(db,'orders'), snap => {
+    allOrders = snap.exists() ? snap.val() : {};
+    const all = Object.values(allOrders);
+    document.getElementById('st-ord').textContent = all.length.toLocaleString();
+    const earn = all.filter(o=>o.status==='delivered').reduce((s,o)=>s+(o.platformFee||0),0);
+    document.getElementById('st-earn').innerHTML = '&#8377;' + earn.toLocaleString();
+    renderDashOrders();
+    if(document.getElementById('sc-orders').classList.contains('active')) renderOrdList();
+  });
+  // Service Areas
+  onValue(ref(db,'serviceAreas'), snap => {
+    allAreas = snap.exists() ? snap.val() : {};
+    if(document.getElementById('sc-areas').classList.contains('active')) renderAreasList();
+  });
+  // Charges
+  onValue(ref(db,'charges'), snap => {
+    charges = snap.exists() ? snap.val() : defaultCharges();
+    if(document.getElementById('sc-charges').classList.contains('active')) renderChargesList();
+  });
+  // Analytics
+  onValue(ref(db,'analytics'), snap => {
+    if(document.getElementById('sc-analytics').classList.contains('active')) renderAnalytics(snap.val());
+  });
+}
+
+function defaultCharges(){
+  return {baseDelivery:25,perKm:5,emergencyFee:50,nightFee:30,platformFee:10,minOrder:100,pharmacyCommission:15,partnerEarning:70};
+}
+
+// ── Navigation ─────────────────────────────────────────
+const titles={dashboard:'Dashboard',areas:'Service Areas',charges:'Charges Management',pharmacies:'Pharmacy Management',partners:'Delivery Partners',orders:'Order Management',analytics:'Analytics'};
+window.goTo = (id,el)=>{
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('pageTitle').textContent = titles[id]||id;
+  closeDrawer();
+  if(id==='areas') renderAreasList();
+  if(id==='charges') renderChargesList();
+  if(id==='pharmacies') renderPhList();
+  if(id==='partners') renderDpList();
+  if(id==='orders') renderOrdList();
+  if(id==='analytics'){ get(ref(db,'analytics')).then(s=>renderAnalytics(s.val())); }
+};
+window.openDrawer=()=>{document.getElementById('drawer').classList.add('open');document.getElementById('drawerOv').style.display='block';};
+window.closeDrawer=()=>{document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOv').style.display='none';};
+
+// ── Helpers ────────────────────────────────────────────
+function sBadge(s){return{pending:'bw',confirmed:'bi',preparing:'bw',ready:'bi',out_for_delivery:'bw',delivered:'bs',cancelled:'bd',approved:'bs',rejected:'bd',inactive:'bg'}[s]||'bg';}
+function sLabel(s){return{pending:'Pending',confirmed:'Confirmed',preparing:'Preparing',ready:'Ready',out_for_delivery:'Out for Delivery',delivered:'Delivered',cancelled:'Cancelled',approved:'Approved',rejected:'Rejected',inactive:'Inactive',pending_approval:'Pending'}[s]||s;}
+
+// ── Dashboard Orders ───────────────────────────────────
+function renderDashOrders(){
+  const list = Object.entries(allOrders).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0)).slice(0,5);
+  const el = document.getElementById('dash-orders');
+  if(!list.length){el.innerHTML='<div class="empty"><i class="fas fa-receipt"></i><p>No orders yet</p></div>';return;}
+  el.innerHTML = list.map(([id,o])=>`
+    <div class="list-item">
+      <div class="list-av" style="background:rgba(0,191,165,.1);color:var(--p)"><i class="fas fa-receipt"></i></div>
+      <div class="list-info">
+        <div class="list-name">${id}</div>
+        <div class="list-sub">${o.userName||'User'} &middot; &#8377;${o.totalAmount||0}</div>
+      </div>
+      <span class="badge ${sBadge(o.status)}">${sLabel(o.status)}</span>
+    </div>`).join('');
+}
+
+// ── Service Areas ──────────────────────────────────────
+function renderAreasList(){
+  const el = document.getElementById('areas-list');
+  const entries = Object.entries(allAreas);
+  if(!entries.length){el.innerHTML='<div class="empty"><i class="fas fa-map"></i><p>No service areas added</p></div>';return;}
+  el.innerHTML = entries.map(([id,a])=>`
+    <div class="list-item">
+      <div class="list-av" style="background:rgba(0,191,165,.1);color:var(--p)"><i class="fas fa-map-pin"></i></div>
+      <div class="list-info">
+        <div class="list-name">${a.district}</div>
+        <div class="list-sub">${a.state}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label class="toggle"><input type="checkbox" ${a.status==='active'?'checked':''} onchange="toggleArea('${id}',this.checked)"><span class="tsl"></span></label>
+        <button class="btn btn-d btn-xs" onclick="deleteArea('${id}')"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+window.addArea = async()=>{
+  const state=document.getElementById('aState').value.trim();
+  const district=document.getElementById('aDistrict').value.trim();
+  const status=document.getElementById('aStatus').value;
+  if(!state||!district){showToast('Fill state and district');return;}
+  await push(ref(db,'serviceAreas'),{state,district,status,createdAt:Date.now()});
+  document.getElementById('aState').value='';document.getElementById('aDistrict').value='';
+  showToast('Area added!');
+};
+window.toggleArea=(id,val)=>update(ref(db,'serviceAreas/'+id),{status:val?'active':'inactive'});
+window.deleteArea=(id)=>{remove(ref(db,'serviceAreas/'+id));showToast('Area removed');};
+
+// ── Charges ────────────────────────────────────────────
+const chargeMeta={baseDelivery:'Base Delivery Charge (&#8377;)',perKm:'Per Km Charge (&#8377;)',emergencyFee:'Emergency Fee (&#8377;)',nightFee:'Night Delivery Fee (&#8377;)',platformFee:'Platform Fee (&#8377;)',minOrder:'Min Order Amount (&#8377;)',pharmacyCommission:'Pharmacy Commission (%)',partnerEarning:'Partner Earning (%)'};
+function renderChargesList(){
+  const c = charges || defaultCharges();
+  document.getElementById('charges-list').innerHTML = Object.keys(chargeMeta).map(k=>`
+    <div class="charge-row">
+      <div class="charge-lbl">${chargeMeta[k]}</div>
+      <input class="charge-inp" type="number" id="ch-${k}" value="${c[k]||0}">
+    </div>`).join('');
+}
+window.saveCharges=async()=>{
+  const data={};
+  Object.keys(chargeMeta).forEach(k=>{const i=document.getElementById('ch-'+k);if(i)data[k]=parseFloat(i.value)||0;});
+  await set(ref(db,'charges'),data);
+  showToast('Charges saved!');
+};
+
+// ── Pharmacies ─────────────────────────────────────────
+function renderPhList(){
+  let entries = Object.entries(allPharmacies);
+  const q = document.getElementById('phSearch')?.value.toLowerCase()||'';
+  if(phFilter!=='all') entries=entries.filter(([,p])=>p.status===phFilter);
+  if(q) entries=entries.filter(([,p])=>(p.name||'').toLowerCase().includes(q)||(p.owner||'').toLowerCase().includes(q));
+  const el = document.getElementById('ph-list');
+  if(!entries.length){el.innerHTML='<div class="empty"><i class="fas fa-clinic-medical"></i><p>No pharmacies found</p></div>';return;}
+  el.innerHTML = entries.map(([id,p])=>`
+    <div class="ord-item">
+      <div class="ord-hd">
+        <div>
+          <div class="ord-id">${p.name||'Unnamed'}</div>
+          <div class="ord-meta">Owner: ${p.owner||'-'}</div>
+          <div class="ord-meta">License: ${p.license||'-'} &middot; ${p.district||'-'}</div>
+          <div class="ord-meta">Email: ${p.email||'-'}</div>
+        </div>
+        <span class="badge ${sBadge(p.status)}">${sLabel(p.status)}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        ${p.licenseUrl?`<button class="doc-btn db-v" onclick="viewImg('${p.licenseUrl}','License')"><i class="fas fa-file-alt"></i> License</button>`:''}
+        ${p.storePhotoUrl?`<button class="doc-btn db-v" onclick="viewImg('${p.storePhotoUrl}','Store Photo')"><i class="fas fa-store"></i> Photo</button>`:''}
+        ${p.status==='pending'?`<button class="doc-btn db-a" onclick="approvePharm('${id}')"><i class="fas fa-check"></i> Approve</button><button class="doc-btn db-r" onclick="rejectPharm('${id}')"><i class="fas fa-times"></i> Reject</button>`:''}
+        ${p.status==='approved'?`<button class="doc-btn db-w" onclick="deactivatePharm('${id}')"><i class="fas fa-ban"></i> Deactivate</button>`:''}
+      </div>
+    </div>`).join('');
+}
+window.filterPh=(f,btn)=>{phFilter=f;document.querySelectorAll('#sc-pharmacies .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPhList();};
+window.searchPh=(q)=>renderPhList();
+window.approvePharm=(id)=>{update(ref(db,'pharmacies/'+id),{status:'approved',approvedAt:Date.now()});showToast('Pharmacy approved!');};
+window.rejectPharm=(id)=>{update(ref(db,'pharmacies/'+id),{status:'rejected',rejectedAt:Date.now()});showToast('Pharmacy rejected');};
+window.deactivatePharm=(id)=>{update(ref(db,'pharmacies/'+id),{status:'inactive'});showToast('Pharmacy deactivated');};
+
+// ── Delivery Partners ──────────────────────────────────
+function renderDpList(){
+  let entries = Object.entries(allPartners);
+  const q = document.getElementById('dpSearch')?.value.toLowerCase()||'';
+  if(dpFilter!=='all') entries=entries.filter(([,p])=>p.status===dpFilter);
+  if(q) entries=entries.filter(([,p])=>(p.name||'').toLowerCase().includes(q));
+  const el = document.getElementById('dp-list');
+  if(!entries.length){el.innerHTML='<div class="empty"><i class="fas fa-motorcycle"></i><p>No delivery partners found</p></div>';return;}
+  el.innerHTML = entries.map(([id,p])=>`
+    <div class="ord-item">
+      <div class="ord-hd">
+        <div>
+          <div class="ord-id">${p.name||'Unnamed'}</div>
+          <div class="ord-meta">Phone: ${p.phone||'-'} &middot; Vehicle: ${p.vehicle||'-'}</div>
+          <div class="ord-meta">Email: ${p.email||'-'}</div>
+          <div class="ord-meta">Deliveries: ${p.totalDeliveries||0}</div>
+        </div>
+        <span class="badge ${sBadge(p.status)}">${sLabel(p.status)}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        ${p.aadhaarUrl?`<button class="doc-btn db-v" onclick="viewImg('${p.aadhaarUrl}','Aadhaar')"><i class="fas fa-id-card"></i> Aadhaar</button>`:''}
+        ${p.licenseUrl?`<button class="doc-btn db-v" onclick="viewImg('${p.licenseUrl}','License')"><i class="fas fa-car"></i> DL</button>`:''}
+        ${p.vehicleUrl?`<button class="doc-btn db-v" onclick="viewImg('${p.vehicleUrl}','Vehicle')"><i class="fas fa-motorcycle"></i> Vehicle</button>`:''}
+        ${p.status==='pending'?`<button class="doc-btn db-a" onclick="approveDp('${id}')"><i class="fas fa-check"></i> Approve</button><button class="doc-btn db-r" onclick="rejectDp('${id}')"><i class="fas fa-times"></i> Reject</button>`:''}
+        ${p.status==='approved'?`<button class="doc-btn db-w" onclick="deactivateDp('${id}')"><i class="fas fa-ban"></i> Deactivate</button>`:''}
+      </div>
+    </div>`).join('');
+}
+window.filterDp=(f,btn)=>{dpFilter=f;document.querySelectorAll('#sc-partners .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderDpList();};
+window.searchDp=(q)=>renderDpList();
+window.approveDp=(id)=>{update(ref(db,'deliveryPartners/'+id),{status:'approved',approvedAt:Date.now()});showToast('Partner approved!');};
+window.rejectDp=(id)=>{update(ref(db,'deliveryPartners/'+id),{status:'rejected'});showToast('Partner rejected');};
+window.deactivateDp=(id)=>{update(ref(db,'deliveryPartners/'+id),{status:'inactive'});showToast('Partner deactivated');};
+
+// ── Orders ─────────────────────────────────────────────
+function renderOrdList(){
+  let entries = Object.entries(allOrders).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  if(ordFilter!=='all') entries=entries.filter(([,o])=>o.status===ordFilter);
+  const el = document.getElementById('ord-list');
+  if(!entries.length){el.innerHTML='<div class="empty"><i class="fas fa-receipt"></i><p>No orders found</p></div>';return;}
+  el.innerHTML = entries.map(([id,o])=>`
+    <div class="ord-item">
+      <div class="ord-hd">
+        <div>
+          <div class="ord-id">${id}</div>
+          <div class="ord-meta">User: ${o.userName||'-'}</div>
+          <div class="ord-meta">Pharmacy: ${o.pharmacyName||'-'} &middot; ${(o.medicineList||[]).length} items</div>
+        </div>
+        <span class="badge ${sBadge(o.status)}">${sLabel(o.status)}</span>
+      </div>
+      <div class="ord-ft">
+        <span style="font-size:12px;color:var(--t2)">${o.createdAt?new Date(o.createdAt).toLocaleDateString():'-'}</span>
+        <span style="font-size:15px;font-weight:700;color:var(--p)">&#8377;${o.totalAmount||0}</span>
+      </div>
+    </div>`).join('');
+}
+window.filterOrd=(f,btn)=>{ordFilter=f;document.querySelectorAll('#sc-orders .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderOrdList();};
+
+// ── Analytics ──────────────────────────────────────────
+function renderAnalytics(data){
+  const orders = Object.values(allOrders);
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const dailyOrd = days.map((_,i)=>{
+    const d = new Date(); d.setDate(d.getDate()-(6-i));
+    return orders.filter(o=>{if(!o.createdAt)return false; const od=new Date(o.createdAt); return od.toDateString()===d.toDateString();}).length;
+  });
+  const dailyRev = days.map((_,i)=>{
+    const d = new Date(); d.setDate(d.getDate()-(6-i));
+    return orders.filter(o=>{if(!o.createdAt||o.status!=='delivered')return false; const od=new Date(o.createdAt); return od.toDateString()===d.toDateString();}).reduce((s,o)=>s+(o.totalAmount||0),0);
+  });
+  const mx1=Math.max(...dailyOrd,1), mx2=Math.max(...dailyRev,1);
+  document.getElementById('ordChart').innerHTML=dailyOrd.map((v,i)=>`<div class="bar" style="height:${v/mx1*90}px" title="${v} orders on ${days[i]}"></div>`).join('');
+  document.getElementById('ordChartLbl').innerHTML=days.map(l=>`<div class="bar-lbl">${l}</div>`).join('');
+  document.getElementById('revChart').innerHTML=dailyRev.map((v,i)=>`<div class="bar" style="height:${v/mx2*90}px;background:var(--ac)" title="&#8377;${v}"></div>`).join('');
+  document.getElementById('revChartLbl').innerHTML=days.map(l=>`<div class="bar-lbl">${l}</div>`).join('');
+  // Top meds from orders
+  const medCount={};
+  orders.forEach(o=>(o.medicineList||[]).forEach(m=>{medCount[m.name]=(medCount[m.name]||0)+(m.qty||1);}));
+  const topMeds=Object.entries(medCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('topMeds').innerHTML=topMeds.length?topMeds.map(([name,cnt],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)"><div style="width:22px;height:22px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</div><div style="flex:1;font-size:13px">${name}</div><div style="font-size:13px;color:var(--p);font-weight:700">${cnt} sold</div></div>`).join(''):'<div class="empty" style="padding:20px"><i class="fas fa-pills"></i><p>No data yet</p></div>';
+}
+
+// ── Image Viewer ───────────────────────────────────────
+window.viewImg=(url,title)=>{
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=`<img src="${url}" style="width:100%;border-radius:12px;max-height:60vh;object-fit:contain">`;
+  document.getElementById('modal').classList.add('open');
+};
+window.closeModal=()=>document.getElementById('modal').classList.remove('open');
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+// ── Toast ──────────────────────────────────────────────
+window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+</script>
+</body>
+</html>
