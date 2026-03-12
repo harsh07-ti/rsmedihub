@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MedRush</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--p:#00BFA5;--pd:#00897B;--ac:#FF6F00;--dg:#F44336;--sc:#4CAF50;--wn:#FF9800;--bg:#F0F4F8;--sf:#FFFFFF;--s2:#F8FAFC;--s3:#EDF2F7;--tx:#1A202C;--t2:#718096;--br:rgba(0,0,0,.08);--sh:0 2px 16px rgba(0,0,0,.08);--rd:16px;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+#authScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:linear-gradient(160deg,#E0F7FA 0%,#F0F4F8 50%,#E8F5E9 100%);}
+.a-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--p),var(--pd));border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:16px;box-shadow:0 8px 32px rgba(0,191,165,.3);}
+.a-card{background:var(--sf);border-radius:20px;padding:28px;width:100%;max-width:380px;box-shadow:var(--sh);}
+.a-tabs{display:flex;background:var(--s3);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;}
+.a-tab{flex:1;padding:10px;border:none;background:transparent;color:var(--t2);font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;}
+.a-tab.active{background:var(--p);color:#fff;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:12px;color:var(--t2);margin-bottom:5px;font-weight:600;}
+.fg input{width:100%;background:var(--s3);border:1.5px solid transparent;border-radius:10px;padding:12px 14px;color:var(--tx);font-size:15px;font-family:inherit;outline:none;transition:border-color .2s;}
+.fg input:focus{border-color:var(--p);background:#fff;}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-p{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;box-shadow:0 4px 15px rgba(0,191,165,.3);}
+.btn-p:active{transform:scale(.98);}
+.btn-d{background:var(--dg);color:#fff;}
+.btn-o{background:transparent;border:1.5px solid var(--br);color:var(--tx);}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;width:auto;}
+#app{display:none;flex-direction:column;min-height:100vh;padding-bottom:70px;}
+.bot-nav{position:fixed;bottom:0;left:0;right:0;background:var(--sf);border-top:1px solid var(--br);display:flex;z-index:100;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;cursor:pointer;color:var(--t2);border:none;background:none;position:relative;}
+.nb.active{color:var(--p);}
+.nb i{font-size:20px;margin-bottom:3px;}
+.nb span{font-size:10px;font-weight:600;}
+.c-badge{position:absolute;top:-3px;right:18px;background:var(--dg);color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;}
+.screen{display:none;}
+.screen.active{display:block;}
+.home-hd{background:linear-gradient(135deg,var(--pd),var(--p));padding:20px 16px 60px;}
+.srch-wrap{position:relative;margin:0 16px;margin-top:-30px;z-index:10;}
+.srch-box{background:var(--sf);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;padding:14px 16px;}
+.srch-box input{flex:1;border:none;outline:none;font-size:15px;color:var(--tx);background:transparent;}
+.sec-title{font-size:16px;font-weight:700;padding:16px 16px 8px;}
+.scroll-row{display:flex;gap:12px;padding:4px 16px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.scroll-row::-webkit-scrollbar{display:none;}
+.cat-chip{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;}
+.cat-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.cat-name{font-size:11px;color:var(--t2);font-weight:600;}
+.ph-card{flex-shrink:0;width:180px;background:var(--sf);border-radius:var(--rd);box-shadow:var(--sh);overflow:hidden;cursor:pointer;}
+.ph-img{height:90px;background:linear-gradient(135deg,#E0F7FA,#B2EBF2);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;}
+.ph-img img{width:100%;height:100%;object-fit:cover;}
+.ph-body{padding:10px;}
+.ph-name{font-size:13px;font-weight:700;}
+.ph-dist{font-size:11px;color:var(--t2);margin-top:2px;}
+.med-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 16px 12px;}
+.med-card{background:var(--sf);border-radius:var(--rd);box-shadow:var(--sh);overflow:hidden;}
+.med-img{height:110px;background:linear-gradient(135deg,#E8F5E9,#C8E6C9);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden;}
+.med-img img{width:100%;height:100%;object-fit:cover;}
+.med-body{padding:10px;}
+.med-name{font-size:13px;font-weight:700;line-height:1.3;}
+.med-price{font-size:15px;font-weight:800;color:var(--p);margin-top:4px;}
+.med-mrp{font-size:11px;color:var(--t2);text-decoration:line-through;}
+.add-btn{width:100%;margin-top:8px;padding:8px;border:none;border-radius:8px;background:var(--p);color:#fff;font-size:12px;font-weight:700;cursor:pointer;}
+.add-btn:disabled{background:var(--t2);cursor:not-allowed;}
+.cart-hd{background:var(--p);padding:16px;display:flex;align-items:center;gap:12px;}
+.c-item{display:flex;align-items:center;gap:12px;background:var(--sf);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:var(--sh);}
+.c-img{width:50px;height:50px;border-radius:10px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.c-img img{width:100%;height:100%;object-fit:cover;}
+.c-info{flex:1;}
+.c-name{font-size:14px;font-weight:600;}
+.c-price{font-size:13px;color:var(--p);font-weight:700;margin-top:2px;}
+.qty-ctrl{display:flex;align-items:center;gap:8px;}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:none;background:var(--s3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.c-summary{background:var(--sf);border-radius:var(--rd);padding:16px;box-shadow:var(--sh);}
+.sum-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:var(--t2);}
+.sum-row.total{font-weight:700;font-size:16px;color:var(--tx);border-top:1px solid var(--br);padding-top:10px;margin-top:4px;}
+.ord-card{background:var(--sf);border-radius:var(--rd);padding:16px;margin:0 16px 12px;box-shadow:var(--sh);}
+.steps{display:flex;flex-direction:column;}
+.step{display:flex;gap:12px;padding-bottom:12px;position:relative;}
+.step:not(:last-child):before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:2px;background:var(--s3);}
+.step.done:not(:last-child):before{background:var(--p);}
+.sdot{width:24px;height:24px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;z-index:1;}
+.step.done .sdot{background:var(--p);color:#fff;}
+.step.cur .sdot{background:var(--ac);color:#fff;box-shadow:0 0 0 4px rgba(255,111,0,.2);}
+.sinfo{flex:1;padding-top:2px;}
+.slbl{font-size:13px;font-weight:600;}
+.stime{font-size:11px;color:var(--t2);}
+.prof-hd{background:linear-gradient(135deg,var(--pd),var(--p));padding:28px 16px 20px;text-align:center;}
+.av-wrap{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);margin:0 auto 12px;border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative;}
+.av-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
+.p-card{background:var(--sf);border-radius:var(--rd);padding:16px;margin:0 16px 12px;box-shadow:var(--sh);}
+.p-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--br);}
+.p-item:last-child{border-bottom:none;}
+.p-item i{width:20px;text-align:center;color:var(--p);}
+.addr-item{background:var(--s2);border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid transparent;cursor:pointer;}
+.addr-item.sel{border-color:var(--p);}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:flex-end;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--sf);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:88vh;overflow-y:auto;}
+.mhandle{width:40px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A202C;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;z-index:500;display:none;white-space:nowrap;}
+.toast.show{display:block;animation:tIn .3s ease;}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.empty{text-align:center;padding:40px 20px;color:var(--t2);}
+.empty i{font-size:44px;opacity:.3;display:block;margin-bottom:12px;}
+.loading{display:flex;align-items:center;justify-content:center;padding:30px;color:var(--t2);}
+.loading i{animation:spin 1s linear infinite;font-size:24px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#trackMap{width:100%;height:230px;border-radius:var(--rd);margin-top:10px;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:#CBD5E0;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="a-logo">&#128138;</div>
+  <div style="font-size:28px;font-weight:800;margin-bottom:4px">MedRush</div>
+  <div style="color:var(--t2);font-size:14px;margin-bottom:28px">Medicine delivered to your door</div>
+  <div class="a-card">
+    <div class="a-tabs">
+      <button class="a-tab active" onclick="switchTab('login',this)">Login</button>
+      <button class="a-tab" onclick="switchTab('signup',this)">Sign Up</button>
+    </div>
+    <div id="loginForm">
+      <div class="fg"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com"></div>
+      <div class="fg"><label>Password</label><input type="password" id="lPass" placeholder="Password"></div>
+      <button class="btn btn-p" onclick="userLogin()"><i class="fas fa-sign-in-alt"></i> Login</button>
+    </div>
+    <div id="signupForm" style="display:none">
+      <div class="fg"><label>Full Name</label><input type="text" id="sName" placeholder="Your full name"></div>
+      <div class="fg"><label>Email</label><input type="email" id="sEmail" placeholder="your@email.com"></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="sPhone" placeholder="10-digit mobile"></div>
+      <div class="fg"><label>Password</label><input type="password" id="sPass" placeholder="Create password"></div>
+      <button class="btn btn-p" onclick="userSignup()"><i class="fas fa-user-plus"></i> Create Account</button>
+    </div>
+    <div id="authErr" style="color:var(--dg);font-size:13px;text-align:center;margin-top:10px;display:none"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="bot-nav">
+    <button class="nb active" onclick="goTab('home',this)"><i class="fas fa-home"></i><span>Home</span></button>
+    <button class="nb" onclick="goTab('meds',this)"><i class="fas fa-pills"></i><span>Medicines</span></button>
+    <button class="nb" onclick="goTab('cart',this)"><i class="fas fa-shopping-cart"></i><div class="c-badge" id="cBadge">0</div><span>Cart</span></button>
+    <button class="nb" onclick="goTab('orders',this)"><i class="fas fa-receipt"></i><span>Orders</span></button>
+    <button class="nb" onclick="goTab('profile',this)"><i class="fas fa-user-circle"></i><span>Profile</span></button>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen active" id="sc-home">
+    <div class="home-hd">
+      <div style="color:rgba(255,255,255,.8);font-size:14px">Good day,</div>
+      <div style="color:#fff;font-size:22px;font-weight:800" id="homeUser">...</div>
+      <div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:6px;display:flex;align-items:center;gap:4px"><i class="fas fa-map-marker-alt"></i><span id="homeLoc">Detecting location...</span></div>
+    </div>
+    <div class="srch-wrap">
+      <div class="srch-box"><i class="fas fa-search" style="color:var(--t2)"></i><input type="text" placeholder="Search medicines..." oninput="searchMeds(this.value)"></div>
+    </div>
+    <div class="sec-title">Categories</div>
+    <div class="scroll-row" id="catRow"></div>
+    <div class="sec-title">Nearby Pharmacies</div>
+    <div class="scroll-row" id="phRow"><div class="loading" style="padding:10px"><i class="fas fa-spinner"></i></div></div>
+    <div class="sec-title">Medicines</div>
+    <div class="med-grid" id="homeMeds"><div style="grid-column:1/-1" class="loading"><i class="fas fa-spinner"></i></div></div>
+  </div>
+
+  <!-- MEDICINES -->
+  <div class="screen" id="sc-meds">
+    <div style="background:var(--p);padding:16px;display:flex;align-items:center;gap:10px">
+      <div style="color:#fff;font-size:17px;font-weight:700;flex:1">All Medicines</div>
+    </div>
+    <div style="padding:12px 16px">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--sf);border-radius:12px;padding:10px 14px;box-shadow:var(--sh)">
+        <i class="fas fa-search" style="color:var(--t2)"></i>
+        <input type="text" placeholder="Search medicines..." style="flex:1;border:none;outline:none;font-size:14px" oninput="searchMeds(this.value)" id="medSearch">
+      </div>
+    </div>
+    <div class="med-grid" id="medGrid"><div style="grid-column:1/-1" class="loading"><i class="fas fa-spinner"></i></div></div>
+  </div>
+
+  <!-- CART -->
+  <div class="screen" id="sc-cart">
+    <div class="cart-hd">
+      <i class="fas fa-shopping-cart" style="color:#fff;font-size:20px"></i>
+      <div style="color:#fff;font-size:17px;font-weight:700;flex:1">My Cart</div>
+      <button onclick="clearCart()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer">Clear</button>
+    </div>
+    <div style="padding:16px">
+      <div id="cartItems"></div>
+      <div id="cartSummary"></div>
+      <div id="cartCta" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div class="screen" id="sc-orders">
+    <div style="background:var(--p);padding:16px"><div style="color:#fff;font-size:17px;font-weight:700">My Orders</div></div>
+    <div style="padding-top:12px" id="ordersList"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="screen" id="sc-profile">
+    <div class="prof-hd">
+      <div class="av-wrap" id="avWrap" onclick="document.getElementById('photoIn').click()">
+        <i class="fas fa-user" style="color:rgba(255,255,255,.8);font-size:36px" id="avIcon"></i>
+        <img id="avImg">
+        <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center"><i class="fas fa-camera" style="font-size:10px;color:#fff"></i></div>
+      </div>
+      <div style="color:#fff;font-size:20px;font-weight:700" id="ppName">...</div>
+      <div style="color:rgba(255,255,255,.75);font-size:14px;margin-top:4px" id="ppPhone"></div>
+    </div>
+    <div style="padding:16px">
+      <div class="p-card">
+        <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase">Personal Info</div>
+        <div class="p-item"><i class="fas fa-user"></i><div style="flex:1;font-size:14px" id="piName">...</div><button onclick="openEditProfile()" style="background:none;border:1px solid var(--br);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--p)">Edit</button></div>
+        <div class="p-item"><i class="fas fa-envelope"></i><div style="font-size:14px" id="piEmail">...</div></div>
+        <div class="p-item"><i class="fas fa-phone"></i><div style="font-size:14px" id="piPhone">...</div></div>
+      </div>
+      <div class="p-card">
+        <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase">Saved Addresses</div>
+        <div id="addrList"></div>
+        <button class="btn btn-o" style="margin-top:8px;padding:10px" onclick="openAddAddr()"><i class="fas fa-plus"></i> Add Address</button>
+      </div>
+      <div style="padding:0 0 20px">
+        <button class="btn btn-d" onclick="userLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-ov" id="checkoutMod">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="modal-title">Confirm Order</div>
+    <div id="checkoutBody"></div>
+  </div>
+</div>
+
+<!-- TRACK MODAL -->
+<div class="modal-ov" id="trackMod">
+  <div class="modal" style="max-height:92vh">
+    <div class="mhandle"></div>
+    <div class="modal-title" id="trackTitle">Order Tracking</div>
+    <div id="trackBody"></div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-ov" id="editMod">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="modal-title">Edit Profile</div>
+    <div class="fg"><label>Full Name</label><input type="text" id="eName"></div>
+    <div class="fg"><label>Phone</label><input type="tel" id="ePhone"></div>
+    <button class="btn btn-p" onclick="saveProfile()"><i class="fas fa-save"></i> Save</button>
+    <button class="btn btn-o" style="margin-top:8px" onclick="closeMod('editMod')">Cancel</button>
+  </div>
+</div>
+
+<!-- ADD ADDRESS MODAL -->
+<div class="modal-ov" id="addrMod">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="modal-title">Add Address</div>
+    <div class="fg"><label>Type</label><input type="text" id="addrType" placeholder="Home / Work / Other"></div>
+    <div class="fg"><label>Full Address</label><input type="text" id="addrText" placeholder="Street, Area, City, Pincode"></div>
+    <button class="btn btn-p" onclick="saveAddress()"><i class="fas fa-save"></i> Save Address</button>
+    <button class="btn btn-o" style="margin-top:8px" onclick="closeMod('addrMod')">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="photoIn" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, push, update, remove, onValue, query, orderByChild, equalTo }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBb2YKyzp4cCABzMci41crDimLZIbLKM7w",
+  authDomain: "rsmedihub-c425a.firebaseapp.com",
+  projectId: "rsmedihub-c425a",
+  storageBucket: "rsmedihub-c425a.firebasestorage.app",
+  messagingSenderId: "1037218664219",
+  appId: "1:1037218664219:web:67ab0681b7dc7843cbcdbe"
+};
+const CLOUDINARY_CLOUD = "YOUR_CLOUD_NAME";
+const CLOUDINARY_PRESET = "YOUR_UPLOAD_PRESET";
+const GEOAPIFY_KEY = "YOUR_GEOAPIFY_KEY";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// ── State ──────────────────────────────────────────────
+let currentUser = null, userProfile = null;
+let cart = [], addresses = [], allMedicines = {}, allPharmacies = {};
+let myOrders = {}, selectedAddr = 0, trackMap = null, delivMarker = null;
+
+const CATEGORIES = [
+  {name:'Tablets',emoji:'&#128138;',color:'#E3F2FD'},{name:'Syrups',emoji:'&#129514;',color:'#E8F5E9'},
+  {name:'Vitamins',emoji:'&#127850;',color:'#FFF9C4'},{name:'First Aid',emoji:'&#129657;',color:'#FCE4EC'},
+  {name:'Ayurvedic',emoji:'&#127807;',color:'#F3E5F5'},{name:'Baby Care',emoji:'&#128116;',color:'#E8EAF6'},
+  {name:'Diabetes',emoji:'&#128296;',color:'#FBE9E7'},{name:'Cardiac',emoji:'&#10084;',color:'#FFEBEE'}
+];
+
+// ── Auth ───────────────────────────────────────────────
+window.switchTab=(tab,btn)=>{document.querySelectorAll('.a-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('loginForm').style.display=tab==='login'?'block':'none';document.getElementById('signupForm').style.display=tab==='signup'?'block':'none';};
+
+window.userLogin = async()=>{
+  const e=document.getElementById('lEmail').value.trim(), p=document.getElementById('lPass').value;
+  const err=document.getElementById('authErr'); err.style.display='none';
+  if(!e||!p){err.textContent='Fill all fields';err.style.display='block';return;}
+  try{ await signInWithEmailAndPassword(auth,e,p); }
+  catch(ex){ err.textContent='Invalid email or password'; err.style.display='block'; }
+};
+
+window.userSignup = async()=>{
+  const n=document.getElementById('sName').value.trim(), e=document.getElementById('sEmail').value.trim();
+  const ph=document.getElementById('sPhone').value.trim(), p=document.getElementById('sPass').value;
+  const err=document.getElementById('authErr'); err.style.display='none';
+  if(!n||!e||!ph||!p){err.textContent='Fill all fields';err.style.display='block';return;}
+  try{
+    const cred = await createUserWithEmailAndPassword(auth,e,p);
+    await set(ref(db,'users/'+cred.user.uid),{name:n,email:e,phone:ph,createdAt:Date.now(),photoUrl:null});
+    showToast('Account created!');
+  } catch(ex){ err.textContent=ex.message; err.style.display='block'; }
+};
+
+window.userLogout = async()=>{ await signOut(auth); };
+
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    currentUser=user;
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    await loadUserProfile();
+    startListeners();
+    getUserLocation();
+  } else {
+    currentUser=null; userProfile=null;
+    document.getElementById('app').style.display='none';
+    document.getElementById('authScreen').style.display='flex';
+  }
+});
+
+async function loadUserProfile(){
+  const snap = await get(ref(db,'users/'+currentUser.uid));
+  userProfile = snap.exists() ? snap.val() : {name:currentUser.email,email:currentUser.email,phone:'',photoUrl:null};
+  updateProfileUI();
+  // Load addresses
+  const aSnap = await get(ref(db,'users/'+currentUser.uid+'/addresses'));
+  addresses = aSnap.exists() ? Object.entries(aSnap.val()).map(([id,v])=>({id,...v})) : [];
+  renderAddresses();
+}
+function updateProfileUI(){
+  const name=userProfile.name||'User';
+  document.getElementById('homeUser').textContent = name.split(' ')[0];
+  document.getElementById('ppName').textContent = name;
+  document.getElementById('ppPhone').textContent = userProfile.phone||'';
+  document.getElementById('piName').textContent = name;
+  document.getElementById('piEmail').textContent = userProfile.email||currentUser.email;
+  document.getElementById('piPhone').textContent = userProfile.phone||'Not set';
+  if(userProfile.photoUrl){ document.getElementById('avIcon').style.display='none'; const img=document.getElementById('avImg'); img.src=userProfile.photoUrl; img.style.display='block'; }
+}
+
+// ── Listeners ──────────────────────────────────────────
+function startListeners(){
+  // Medicines (from all pharmacies)
+  onValue(ref(db,'medicines'), snap=>{
+    allMedicines = snap.exists() ? snap.val() : {};
+    renderHomeMeds(); renderMedGrid();
+  });
+  // Pharmacies
+  onValue(ref(db,'pharmacies'), snap=>{
+    allPharmacies = snap.exists() ? snap.val() : {};
+    renderPharmacyRow();
+  });
+  // My orders
+  onValue(query(ref(db,'orders'),orderByChild('userId'),equalTo(currentUser.uid)), snap=>{
+    myOrders = snap.exists() ? snap.val() : {};
+    if(document.getElementById('sc-orders').classList.contains('active')) renderOrders();
+  });
+}
+
+function getUserLocation(){
+  if(!navigator.geolocation){document.getElementById('homeLoc').textContent='Location unavailable';return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat,longitude:lng} = pos.coords;
+    // Reverse geocode with Geoapify
+    fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&apiKey=${GEOAPIFY_KEY}`)
+      .then(r=>r.json()).then(d=>{
+        const c=d.features?.[0]?.properties;
+        if(c) document.getElementById('homeLoc').textContent=(c.suburb||c.city_district||c.city||'')+', '+(c.state||'');
+      }).catch(()=>document.getElementById('homeLoc').textContent='Location detected');
+  },()=>document.getElementById('homeLoc').textContent='Enable location for better experience');
+}
+
+// ── Nav ────────────────────────────────────────────────
+window.goTab=(id,btn)=>{
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(id==='cart')renderCart();
+  if(id==='orders')renderOrders();
+};
+
+// ── Home Renders ───────────────────────────────────────
+function renderHomeMeds(){
+  // Flatten medicines from all pharmacies
+  const all=[];
+  Object.entries(allMedicines).forEach(([pharmId,meds])=>{
+    if(typeof meds==='object') Object.entries(meds).forEach(([mid,m])=>all.push({...m,_id:mid,_pharmId:pharmId}));
+  });
+  const el=document.getElementById('homeMeds');
+  if(!all.length){el.innerHTML='<div style="grid-column:1/-1" class="empty"><i class="fas fa-pills"></i><p>No medicines available</p></div>';return;}
+  el.innerHTML = all.slice(0,6).map(m=>medCard(m)).join('');
+}
+function renderMedGrid(filter=''){
+  const all=[];
+  Object.entries(allMedicines).forEach(([pharmId,meds])=>{
+    if(typeof meds==='object') Object.entries(meds).forEach(([mid,m])=>all.push({...m,_id:mid,_pharmId:pharmId}));
+  });
+  const filtered = filter ? all.filter(m=>(m.name||'').toLowerCase().includes(filter.toLowerCase())) : all;
+  const el=document.getElementById('medGrid');
+  if(!filtered.length){el.innerHTML='<div style="grid-column:1/-1" class="empty"><i class="fas fa-search"></i><p>No medicines found</p></div>';return;}
+  el.innerHTML=filtered.map(m=>medCard(m)).join('');
+}
+function medCard(m){
+  const disc = m.mrp&&m.price ? Math.round((1-m.price/m.mrp)*100) : 0;
+  const img = m.imgUrl ? `<img src="${m.imgUrl}" style="width:100%;height:100%;object-fit:cover">` : (m.emoji||'&#128138;');
+  return `<div class="med-card">
+    <div class="med-img">${img}</div>
+    <div class="med-body">
+      <div class="med-name">${m.name||'Medicine'}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+        <div class="med-price">&#8377;${m.price||0}</div>
+        ${m.mrp?`<div class="med-mrp">&#8377;${m.mrp}</div>`:''}
+        ${disc>0?`<span style="background:rgba(76,175,80,.1);color:var(--sc);font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px">${disc}%</span>`:''}
+      </div>
+      <button class="add-btn" onclick="addToCart('${m._pharmId}','${m._id}')" ${m.inStock===false?'disabled':''}>${m.inStock===false?'Out of Stock':'<i class="fas fa-cart-plus"></i> Add'}</button>
+    </div>
+  </div>`;
+}
+window.searchMeds=(q)=>{renderMedGrid(q);if(document.getElementById('homeMeds'))renderHomeMeds();};
+
+function renderPharmacyRow(){
+  const el=document.getElementById('phRow');
+  const list=Object.entries(allPharmacies).filter(([,p])=>p.status==='approved');
+  if(!list.length){el.innerHTML='<div style="color:var(--t2);font-size:13px;padding:10px">No pharmacies nearby yet</div>';return;}
+  const cats=['#E3F2FD','#E8F5E9','#FCE4EC','#F3E5F5','#FFF9C4'];
+  el.innerHTML=list.map(([id,p],i)=>`
+    <div class="ph-card" onclick="goTab('meds',document.querySelectorAll('.nb')[1])">
+      <div class="ph-img" style="background:linear-gradient(135deg,${cats[i%cats.length]},#fff)">
+        ${p.storePhotoUrl?`<img src="${p.storePhotoUrl}">`:'&#128138;'}
+      </div>
+      <div class="ph-body">
+        <div class="ph-name">${p.name||'Pharmacy'}</div>
+        <div class="ph-dist">${p.address||p.district||''}</div>
+        <div style="font-size:11px;color:${p.status==='open'?'var(--sc)':'var(--dg)'};margin-top:3px">${p.status==='open'?'&#9679; Open':'&#9679; Closed'}</div>
+      </div>
+    </div>`).join('');
+}
+
+// Render category chips
+document.getElementById('catRow').innerHTML = CATEGORIES.map(c=>`
+  <div class="cat-chip" onclick="goTab('meds',document.querySelectorAll('.nb')[1])">
+    <div class="cat-icon" style="background:${c.color}">${c.emoji}</div>
+    <div class="cat-name">${c.name}</div>
+  </div>`).join('');
+
+// ── Cart ───────────────────────────────────────────────
+window.addToCart=(pharmId,medId)=>{
+  const m=allMedicines?.[pharmId]?.[medId]; if(!m)return;
+  const ex=cart.find(c=>c._id===medId&&c._pharmId===pharmId);
+  if(ex)ex.qty++;
+  else cart.push({...m,_id:medId,_pharmId:pharmId,qty:1});
+  updateCartBadge(); showToast((m.name||'Item')+' added');
+};
+function updateCartBadge(){
+  const n=cart.reduce((s,i)=>s+i.qty,0);
+  const b=document.getElementById('cBadge');
+  b.style.display=n>0?'flex':'none'; b.textContent=n>9?'9+':n;
+}
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  if(!cart.length){
+    el.innerHTML='<div class="empty"><i class="fas fa-shopping-cart"></i><p>Cart is empty</p></div>';
+    document.getElementById('cartSummary').innerHTML='';
+    document.getElementById('cartCta').innerHTML='';return;
+  }
+  el.innerHTML=cart.map(item=>{
+    const img=item.imgUrl?`<img src="${item.imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`:(item.emoji||'&#128138;');
+    return `<div class="c-item">
+      <div class="c-img">${img}</div>
+      <div class="c-info"><div class="c-name">${item.name}</div><div class="c-price">&#8377;${item.price} each</div></div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty('${item._pharmId}','${item._id}',-1)">&#8722;</button>
+        <span style="font-size:14px;font-weight:700;min-width:20px;text-align:center">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${item._pharmId}','${item._id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  const sub=cart.reduce((s,i)=>s+(i.price*i.qty),0);
+  const del=25,plat=10,total=sub+del+plat;
+  document.getElementById('cartSummary').innerHTML=`
+    <div class="c-summary">
+      <div class="sum-row"><span>Subtotal</span><span>&#8377;${sub}</span></div>
+      <div class="sum-row"><span>Delivery Fee</span><span>&#8377;${del}</span></div>
+      <div class="sum-row"><span>Platform Fee</span><span>&#8377;${plat}</span></div>
+      <div class="sum-row total"><span>Total</span><span>&#8377;${total}</span></div>
+    </div>`;
+  document.getElementById('cartCta').innerHTML=`<button class="btn btn-p" onclick="openCheckout(${sub},${del},${plat},${total})"><i class="fas fa-bolt"></i> Place Order &mdash; &#8377;${total}</button>`;
+}
+window.changeQty=(pId,mId,d)=>{
+  const it=cart.find(c=>c._id===mId&&c._pharmId===pId);
+  if(it){it.qty+=d;if(it.qty<=0)cart=cart.filter(c=>!(c._id===mId&&c._pharmId===pId));}
+  updateCartBadge();renderCart();
+};
+window.clearCart=()=>{cart=[];updateCartBadge();renderCart();};
+
+// ── Checkout ───────────────────────────────────────────
+window.openCheckout=(sub,del,plat,total)=>{
+  document.getElementById('checkoutBody').innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:8px">Delivery Address</div>
+      ${addresses.length?addresses.map((a,i)=>`<div class="addr-item ${i===selectedAddr?'sel':''}" onclick="selAddr(${i})"><div style="font-size:12px;font-weight:700;color:var(--p)">${a.type||'Address'}</div><div style="font-size:13px;color:var(--t2)">${a.text}</div></div>`).join(''):'<div style="color:var(--dg);font-size:13px;margin-bottom:10px">&#9888; Add an address first in Profile tab</div>'}
+    </div>
+    <div class="c-summary" style="margin-bottom:14px">
+      <div class="sum-row"><span>Subtotal</span><span>&#8377;${sub}</span></div>
+      <div class="sum-row"><span>Delivery Fee</span><span>&#8377;${del}</span></div>
+      <div class="sum-row"><span>Platform Fee</span><span>&#8377;${plat}</span></div>
+      <div class="sum-row total"><span>Total</span><span>&#8377;${total}</span></div>
+    </div>
+    <div style="background:rgba(0,191,165,.08);border-radius:10px;padding:10px;font-size:12px;color:var(--t2);margin-bottom:12px">
+      <i class="fas fa-info-circle" style="color:var(--p)"></i> Nearest active pharmacy will be selected automatically
+    </div>
+    <button class="btn btn-p" onclick="placeOrder(${total},${del},${plat})"><i class="fas fa-check-circle"></i> Confirm &mdash; &#8377;${total}</button>
+    <button class="btn btn-o" style="margin-top:8px" onclick="closeMod('checkoutMod')">Cancel</button>`;
+  document.getElementById('checkoutMod').classList.add('open');
+};
+window.selAddr=(i)=>{selectedAddr=i;document.querySelectorAll('.addr-item').forEach((el,idx)=>el.classList.toggle('sel',idx===i));};
+
+window.placeOrder = async(total,delFee,platFee)=>{
+  if(!addresses.length){showToast('Add a delivery address first');return;}
+  // Find nearest approved pharmacy
+  const pharmList = Object.entries(allPharmacies).filter(([,p])=>p.status==='approved');
+  if(!pharmList.length){showToast('No pharmacy available in your area');return;}
+  // Pick first pharmacy (in production: sort by Haversine distance)
+  const [pharmId, pharmData] = pharmList[0];
+  const addr = addresses[selectedAddr];
+  const orderData = {
+    userId: currentUser.uid,
+    userName: userProfile?.name||currentUser.email,
+    userEmail: currentUser.email,
+    pharmacyId: pharmId,
+    pharmacyName: pharmData.name||'Pharmacy',
+    deliveryPartnerId: null,
+    medicineList: cart.map(c=>({name:c.name,qty:c.qty,price:c.price,pharmId:c._pharmId,medId:c._id})),
+    deliveryAddress: addr.text||'',
+    deliveryFee: delFee,
+    platformFee: platFee,
+    totalAmount: total,
+    status: 'pending',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  const ordRef = await push(ref(db,'orders'), orderData);
+  // Write to pharmacy's incoming requests
+  await set(ref(db,'pharmacyRequests/'+pharmId+'/'+ordRef.key),{orderId:ordRef.key,...orderData,timeout:30});
+  cart=[]; updateCartBadge();
+  closeMod('checkoutMod');
+  showToast('Order placed! Finding nearest pharmacy...');
+  goTab('orders',document.querySelectorAll('.nb')[3]);
+};
+
+// ── Orders ─────────────────────────────────────────────
+function renderOrders(){
+  const entries=Object.entries(myOrders).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  const el=document.getElementById('ordersList');
+  if(!entries.length){el.innerHTML='<div class="empty"><i class="fas fa-receipt"></i><p>No orders yet</p></div>';return;}
+  const sc={pending:'#FF9800',confirmed:'#2196F3',preparing:'#FF9800',ready:'#9C27B0',out_for_delivery:'#FF6F00',delivered:'#4CAF50',cancelled:'#F44336'};
+  const sl={pending:'Pending',confirmed:'Confirmed',preparing:'Preparing',ready:'Ready',out_for_delivery:'Out for Delivery',delivered:'Delivered',cancelled:'Cancelled'};
+  el.innerHTML=entries.map(([id,o])=>`
+    <div class="ord-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--p)">${id.slice(-8).toUpperCase()}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:2px">${o.pharmacyName||'Pharmacy'}</div>
+          <div style="font-size:12px;color:var(--t2)">${(o.medicineList||[]).length} items &middot; &#8377;${o.totalAmount||0}</div>
+        </div>
+        <span style="background:${sc[o.status]||'#718096'};color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700">${sl[o.status]||o.status}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-o btn-sm" onclick="openTrack('${id}')"><i class="fas fa-location-arrow"></i> Track</button>
+        ${o.status==='out_for_delivery'?`<button class="btn btn-p btn-sm" onclick="openMap('${id}')"><i class="fas fa-map"></i> Live Map</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+window.openTrack=(id)=>{
+  const o=myOrders[id]; if(!o)return;
+  const steps=[
+    {label:'Order Placed',key:'pending'},{label:'Pharmacy Confirmed',key:'confirmed'},
+    {label:'Preparing',key:'preparing'},{label:'Ready for Pickup',key:'ready'},
+    {label:'Out for Delivery',key:'out_for_delivery'},{label:'Delivered',key:'delivered'}
+  ];
+  const seq=['pending','confirmed','preparing','ready','out_for_delivery','delivered'];
+  const cur=seq.indexOf(o.status);
+  document.getElementById('trackTitle').textContent='Order #'+id.slice(-8).toUpperCase();
+  document.getElementById('trackBody').innerHTML=`
+    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">${o.pharmacyName||''} &middot; &#8377;${o.totalAmount||0}</div>
+    <div class="steps">${steps.map((s,i)=>`<div class="step ${i<=cur?'done':''} ${i===cur?'cur':''}"><div class="sdot">${i<cur?'<i class="fas fa-check" style="font-size:10px"></i>':i+1}</div><div class="sinfo"><div class="slbl">${s.label}</div></div></div>`).join('')}</div>`;
+  document.getElementById('trackMod').classList.add('open');
+  // Real-time status update
+  onValue(ref(db,'orders/'+id+'/status'), snap=>{
+    if(snap.exists()) window.openTrack(id);
+  });
+};
+
+window.openMap=(id)=>{
+  const o=myOrders[id]; if(!o)return;
+  document.getElementById('trackTitle').textContent='Live Tracking';
+  document.getElementById('trackBody').innerHTML=`<div id="trackMap"></div><div style="margin-top:10px;padding:12px;background:rgba(0,191,165,.08);border-radius:10px;font-size:13px;color:var(--t2)"><i class="fas fa-motorcycle" style="color:var(--p)"></i> Partner is on the way &mdash; tracking live</div>`;
+  document.getElementById('trackMod').classList.add('open');
+  setTimeout(()=>{
+    if(trackMap){trackMap.remove();trackMap=null;}
+    const el=document.getElementById('trackMap'); if(!el)return;
+    el.style.height='220px';el.style.borderRadius='12px';
+    trackMap=L.map('trackMap',{zoomControl:false}).setView([12.9716,77.5946],14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OSM'}).addTo(trackMap);
+    const uIcon=L.divIcon({html:'<div style="width:30px;height:30px;background:#00BFA5;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fas fa-home" style="color:#fff;font-size:12px"></i></div>',iconSize:[30,30],iconAnchor:[15,15],className:''});
+    const dIcon=L.divIcon({html:'<div style="width:34px;height:34px;background:#FF6F00;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fas fa-motorcycle" style="color:#fff;font-size:13px"></i></div>',iconSize:[34,34],iconAnchor:[17,17],className:''});
+    L.marker([12.9716,77.5946],{icon:uIcon}).addTo(trackMap).bindPopup('Your Location');
+    delivMarker=L.marker([12.9750,77.5920],{icon:dIcon}).addTo(trackMap).bindPopup('Delivery Partner');
+    // Real-time GPS from Firebase
+    onValue(ref(db,'deliveryTracking/'+id+'/location'), snap=>{
+      if(snap.exists()&&delivMarker){const {lat,lng}=snap.val();delivMarker.setLatLng([lat,lng]);}
+    });
+  },300);
+};
+
+// ── Profile ────────────────────────────────────────────
+window.openEditProfile=()=>{document.getElementById('eName').value=userProfile?.name||'';document.getElementById('ePhone').value=userProfile?.phone||'';document.getElementById('editMod').classList.add('open');};
+window.saveProfile=async()=>{
+  const n=document.getElementById('eName').value.trim(), p=document.getElementById('ePhone').value.trim();
+  if(!n)return;
+  await update(ref(db,'users/'+currentUser.uid),{name:n,phone:p});
+  userProfile.name=n;userProfile.phone=p; updateProfileUI(); closeMod('editMod'); showToast('Profile updated!');
+};
+function renderAddresses(){
+  const el=document.getElementById('addrList');
+  if(!addresses.length){el.innerHTML='<div style="font-size:13px;color:var(--t2);padding:8px 0">No addresses saved</div>';return;}
+  el.innerHTML=addresses.map((a,i)=>`<div class="addr-item"><div style="display:flex;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:var(--p)">${a.type||'Address'}</div><div style="font-size:13px;color:var(--t2);margin-top:2px">${a.text}</div></div><button onclick="delAddr('${a.id}')" style="background:none;border:none;color:var(--dg);cursor:pointer"><i class="fas fa-trash"></i></button></div></div>`).join('');
+}
+window.openAddAddr=()=>document.getElementById('addrMod').classList.add('open');
+window.saveAddress=async()=>{
+  const type=document.getElementById('addrType').value.trim()||'Other';
+  const text=document.getElementById('addrText').value.trim();
+  if(!text){showToast('Enter address');return;}
+  const r=await push(ref(db,'users/'+currentUser.uid+'/addresses'),{type,text,createdAt:Date.now()});
+  addresses.push({id:r.key,type,text}); renderAddresses(); closeMod('addrMod'); showToast('Address saved!');
+};
+window.delAddr=async(id)=>{
+  await remove(ref(db,'users/'+currentUser.uid+'/addresses/'+id));
+  addresses=addresses.filter(a=>a.id!==id); renderAddresses(); showToast('Address removed');
+};
+window.handlePhotoUpload=async(input)=>{
+  if(!input.files[0])return;
+  if(!CLOUDINARY_CLOUD||CLOUDINARY_CLOUD==='YOUR_CLOUD_NAME'){showToast('Configure Cloudinary first');return;}
+  const fd=new FormData(); fd.append('file',input.files[0]); fd.append('upload_preset',CLOUDINARY_PRESET);
+  showToast('Uploading...');
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:fd});
+  const data=await res.json();
+  if(data.secure_url){
+    await update(ref(db,'users/'+currentUser.uid),{photoUrl:data.secure_url});
+    userProfile.photoUrl=data.secure_url;
+    document.getElementById('avIcon').style.display='none';
+    const img=document.getElementById('avImg'); img.src=data.secure_url; img.style.display='block';
+    showToast('Photo updated!');
+  }
+};
+
+window.closeMod=(id)=>document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.modal-ov').forEach(el=>el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+</script>
+</body>
+</html>
